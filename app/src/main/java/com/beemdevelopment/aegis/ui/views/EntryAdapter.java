@@ -1,9 +1,16 @@
 package com.beemdevelopment.aegis.ui.views;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 
+import com.beemdevelopment.aegis.R;
 import com.beemdevelopment.aegis.SortCategory;
 import com.beemdevelopment.aegis.ViewMode;
 import com.beemdevelopment.aegis.db.DatabaseEntry;
@@ -20,6 +27,8 @@ import java.util.List;
 import java.util.UUID;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import static com.topjohnwu.superuser.internal.InternalUtils.getContext;
 
 public class EntryAdapter extends RecyclerView.Adapter<EntryHolder> implements ItemTouchHelperAdapter {
     private List<DatabaseEntry> _entries;
@@ -56,10 +65,12 @@ public class EntryAdapter extends RecyclerView.Adapter<EntryHolder> implements I
         _tapToRevealTime = number;
     }
 
-    public void addEntry(DatabaseEntry entry) {
+    public int addEntry(DatabaseEntry entry) {
+        int position = 0;
+
         _entries.add(entry);
         if (isEntryFiltered(entry)) {
-            return;
+            return position;
         }
 
         boolean added = false;
@@ -72,6 +83,8 @@ public class EntryAdapter extends RecyclerView.Adapter<EntryHolder> implements I
                     _shownEntries.add(i, entry);
                     notifyItemInserted(i);
                     added = true;
+
+                    position = i;
                     break;
                 }
             }
@@ -80,7 +93,7 @@ public class EntryAdapter extends RecyclerView.Adapter<EntryHolder> implements I
         if (!added){
             _shownEntries.add(entry);
 
-            int position = getItemCount() - 1;
+            position = getItemCount() - 1;
             if (position == 0) {
                 notifyDataSetChanged();
             } else {
@@ -89,6 +102,8 @@ public class EntryAdapter extends RecyclerView.Adapter<EntryHolder> implements I
         }
 
         checkPeriodUniformity();
+
+        return position;
     }
 
     public void addEntries(List<DatabaseEntry> entries) {

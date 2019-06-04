@@ -2,6 +2,7 @@ package com.beemdevelopment.aegis.ui.views;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -171,7 +172,8 @@ public class EntryListView extends Fragment implements EntryAdapter.Listener {
     }
 
     public void addEntry(DatabaseEntry entry) {
-        _adapter.addEntry(entry);
+        int position = _adapter.addEntry(entry);
+        _recyclerView.smoothScrollToPosition(position);
     }
 
     public void addEntries(List<DatabaseEntry> entries) {
