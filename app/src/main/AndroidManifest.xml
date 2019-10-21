@@ -65,6 +65,12 @@
             android:label="Manage groups" />
 
         <service android:name=".services.NotificationService" />
+
+        <receiver android:name=".receivers.EncryptedBackupBroadcastReceiver">
+            <intent-filter>
+                <action android:name="com.beemdevelopment.aegis.broadcast.ENCRYPTED_BACKUP" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

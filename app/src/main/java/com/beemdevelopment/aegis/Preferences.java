@@ -40,6 +40,8 @@ public class Preferences {
         return _prefs.getBoolean("pref_intro", false);
     }
 
+    public boolean isBackupEnabled() { return _prefs.getBoolean("pref_backup", false); }
+
     public boolean isAutoLockEnabled() {
         return _prefs.getBoolean("pref_auto_lock", true);
     }

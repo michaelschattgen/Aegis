@@ -125,6 +125,16 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="Backups"
+        app:iconSpaceReserved="false">
+        <CheckBoxPreference
+            android:key="pref_backup"
+            android:title="Automatic backups"
+            android:summary="Allow third party apps to automatically backup your vault"
+            app:iconSpaceReserved="false"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/pref_tools_group_title"
         app:iconSpaceReserved="false">
         <Preference

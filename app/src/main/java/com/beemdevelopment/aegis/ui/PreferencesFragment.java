@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.crypto.Cipher;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -71,6 +72,7 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
     // permission request codes
     private static final int CODE_PERM_IMPORT = 0;
     private static final int CODE_PERM_EXPORT = 1;
+    private static final int CODE_PERM_BACKUP = 2;
 
     private Intent _result;
     private DatabaseManager _db;
@@ -82,6 +84,7 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
 
     private SwitchPreference _encryptionPreference;
     private SwitchPreference _fingerprintPreference;
+    private CheckBoxPreference _backupPreference;
     private Preference _autoLockPreference;
     private Preference _setPasswordPreference;
     private Preference _slotsPreference;
@@ -351,6 +354,15 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
         });
 
         _autoLockPreference = findPreference("pref_auto_lock");
+
+        _backupPreference = findPreference("pref_backup");
+        _backupPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if ((boolean)newValue) {
+                PermissionHelper.request(getActivity(), CODE_PERM_BACKUP, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
+
+            return true;
+        });
     }
 
     @Override
@@ -361,7 +373,12 @@ public class PreferencesFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (!PermissionHelper.checkResults(grantResults)) {
+        boolean permissionGranted = PermissionHelper.checkResults(grantResults);
+        if (requestCode == CODE_PERM_BACKUP) {
+            _backupPreference.setChecked(permissionGranted);
+        }
+
+        if (!permissionGranted) {
             Toast.makeText(getActivity(), R.string.permission_denied, Toast.LENGTH_SHORT).show();
             return;
         }

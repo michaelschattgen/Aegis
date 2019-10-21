@@ -1,8 +1,6 @@
 package com.beemdevelopment.aegis;
 
 import android.app.Application;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +11,7 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 
 import com.beemdevelopment.aegis.db.DatabaseManager;
+import com.beemdevelopment.aegis.helpers.NotificationHelper;
 import com.beemdevelopment.aegis.services.NotificationService;
 import com.beemdevelopment.aegis.ui.MainActivity;
 import com.mikepenz.iconics.Iconics;
@@ -29,7 +28,6 @@ public class AegisApplication extends Application {
     private Preferences _prefs;
     private List<LockListener> _lockListeners;
 
-    private static final String CODE_LOCK_STATUS_ID = "lock_status_channel";
     private static final String CODE_LOCK_DATABASE_ACTION = "lock_database";
 
     @Override
@@ -54,7 +52,7 @@ public class AegisApplication extends Application {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            initNotificationChannels();
+            NotificationHelper.initChannels(this);
         }
     }
 
@@ -106,20 +104,6 @@ public class AegisApplication extends Application {
                 .build();
 
         shortcutManager.setDynamicShortcuts(Collections.singletonList(shortcut));
-    }
-
-    private void initNotificationChannels() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.channel_name_lock_status);
-            String description = getString(R.string.channel_description_lock_status);
-            int importance = NotificationManager.IMPORTANCE_LOW;
-
-            NotificationChannel channel = new NotificationChannel(CODE_LOCK_STATUS_ID, name, importance);
-            channel.setDescription(description);
-
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
     }
 
     public class ScreenOffReceiver extends BroadcastReceiver {
