@@ -103,8 +103,26 @@
                     android:maxLines="1"
                     android:textSize="9sp"
                     tools:text=" - AccountName" />
-            </RelativeLayout>
 
+
+            </RelativeLayout>
+            <RelativeLayout
+                android:id="@+id/offsetWindowLayout"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignEnd="@id/description"
+                android:background="@drawable/rounded_circle_background"
+                android:visibility="invisible">
+
+                <TextView
+                    android:id="@+id/tv_offsetWindow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_centerHorizontal="true"
+                    android:textStyle="bold"
+                    android:textSize="12sp" />
+            </RelativeLayout>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

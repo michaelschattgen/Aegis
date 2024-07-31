@@ -2,6 +2,8 @@ package com.beemdevelopment.aegis.helpers;
 
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 
+import android.graphics.Canvas;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -45,6 +47,11 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public boolean isItemViewSwipeEnabled() {
         return false;
+    }
+
+    @Override
+    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
     }
 
     public void setDragFlags(int dragFlags) {
@@ -94,8 +101,13 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
     }
 
     @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-        _adapter.onItemDismiss(viewHolder.getBindingAdapterPosition());
+    public void onChildDraw(Canvas c, RecyclerView recyclerView,
+                            RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            return;
+        }
+
+        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 
     @Override

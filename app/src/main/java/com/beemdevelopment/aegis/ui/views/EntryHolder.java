@@ -1,5 +1,9 @@
 package com.beemdevelopment.aegis.ui.views;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.view.View;
 import android.view.animation.Animation;
@@ -35,6 +39,8 @@ public class EntryHolder extends RecyclerView.ViewHolder {
 
     private View _favoriteIndicator;
     private TextView _profileName;
+    private TextView _textWindowOffset;
+    private RelativeLayout _layoutWindowOffset;
     private TextView _profileCode;
     private TextView _profileIssuer;
     private TextView _profileCopied;
@@ -53,6 +59,7 @@ public class EntryHolder extends RecyclerView.ViewHolder {
 
     private boolean _hidden;
     private boolean _paused;
+    private int _windowOffset = 0;
 
     private TotpProgressBar _progressBar;
     private MaterialCardView _view;
@@ -71,6 +78,8 @@ public class EntryHolder extends RecyclerView.ViewHolder {
         _profileCode = view.findViewById(R.id.profile_code);
         _profileIssuer = view.findViewById(R.id.profile_issuer);
         _profileCopied = view.findViewById(R.id.profile_copied);
+        _textWindowOffset = view.findViewById(R.id.tv_offsetWindow);
+        _layoutWindowOffset = view.findViewById(R.id.offsetWindowLayout);
         _description = view.findViewById(R.id.description);
         _profileDrawable = view.findViewById(R.id.ivTextDrawable);
         _buttonRefresh = view.findViewById(R.id.buttonRefresh);
@@ -260,6 +269,45 @@ public class EntryHolder extends RecyclerView.ViewHolder {
         }
     }
 
+    public void setWindowOffset(int offset) {
+        _windowOffset += offset;
+        animateProfileCode(offset);
+
+        updateWindowOffsetView();
+    }
+
+    private void updateWindowOffsetView() {
+        if (_windowOffset == 0) {
+            _layoutWindowOffset.setVisibility(View.INVISIBLE);
+        } else {
+            _layoutWindowOffset.setVisibility(View.VISIBLE);
+            _textWindowOffset.setText((_windowOffset > 0 ? "+" : "") + _windowOffset);
+        }
+    }
+
+    private void animateProfileCode(int offset) {
+        ObjectAnimator fadeOut = ObjectAnimator.ofFloat(_profileCode, "alpha", 1f, 0f);
+        ObjectAnimator moveRight = ObjectAnimator.ofFloat(_profileCode, "translationX", 0f, offset > 0 ? 40f : -40f);
+
+        AnimatorSet fadeOutSet = new AnimatorSet();
+        fadeOutSet.playTogether(fadeOut, moveRight);
+        fadeOutSet.setDuration(150);
+
+        fadeOutSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            updateCode();
+
+            ObjectAnimator fadeIn = ObjectAnimator.ofFloat(_profileCode, "alpha", 0f, 1f);
+                _profileCode.setTranslationX(0);
+            fadeIn.setDuration(300);
+            fadeIn.start();
+            }
+        });
+
+        fadeOutSet.start();
+    }
+
     private void updateCode() {
         OtpInfo info = _entry.getInfo();
 
@@ -269,7 +317,11 @@ public class EntryHolder extends RecyclerView.ViewHolder {
         // the OTP, instead of crashing.
         String otp;
         try {
-            otp = info.getOtp();
+            if (_windowOffset != 0 && info instanceof TotpInfo) {
+                otp = ((TotpInfo)info).getOtp((System.currentTimeMillis() / 1000) + ((long) _windowOffset * ((TotpInfo) _entry.getInfo()).getPeriod()));
+            } else {
+                otp = info.getOtp();
+            }
             if (!(info instanceof SteamInfo || info instanceof YandexInfo)) {
                 otp = formatCode(otp);
             }

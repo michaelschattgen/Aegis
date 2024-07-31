@@ -24,6 +24,7 @@ import com.beemdevelopment.aegis.R;
 import com.beemdevelopment.aegis.SortCategory;
 import com.beemdevelopment.aegis.ViewMode;
 import com.beemdevelopment.aegis.helpers.ItemTouchHelperAdapter;
+import com.beemdevelopment.aegis.helpers.SimpleSwipeTouchListener;
 import com.beemdevelopment.aegis.helpers.comparators.FavoriteComparator;
 import com.beemdevelopment.aegis.otp.HotpInfo;
 import com.beemdevelopment.aegis.otp.OtpInfo;
@@ -48,6 +49,7 @@ import java.util.UUID;
 
 public class EntryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ItemTouchHelperAdapter {
     private EntryListView _view;
+    private RecyclerView _recyclerView;
     private List<VaultEntry> _entries;
     private List<VaultEntry> _shownEntries;
     private List<VaultEntry> _selectedEntries;
@@ -420,11 +422,6 @@ public class EntryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     @Override
-    public void onItemDismiss(int position) {
-
-    }
-
-    @Override
     public void onItemDrop(int position) {
         // moving entries is not allowed when a filter is applied
         // footer cant be moved, nor can items be moved below it
@@ -502,12 +499,17 @@ public class EntryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        _recyclerView = recyclerView;
+    }
+
+    @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof EntryHolder) {
             EntryHolder entryHolder = (EntryHolder) holder;
             int index = translateEntryPosToIndex(position);
             VaultEntry entry = _shownEntries.get(index);
-
             boolean hidden = _tapToReveal && entry != _focusedEntry;
             boolean paused = _pauseFocused && entry == _focusedEntry;
             boolean dimmed = (_highlightEntry || _tempHighlightEntry) && _focusedEntry != null && _focusedEntry != entry;
@@ -602,18 +604,6 @@ public class EntryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     return returnVal;
                 }
             });
-            entryHolder.itemView.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    // Start drag if this is the only item selected
-                    if (event.getActionMasked() == MotionEvent.ACTION_MOVE
-                            && isEntryDraggable(entryHolder.getEntry())) {
-                        _view.startDrag(entryHolder);
-                        return true;
-                    }
-                    return false;
-                }
-            });
             entryHolder.setOnRefreshClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -631,6 +621,36 @@ public class EntryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
                     // finally, refresh the code in the UI
                     entryHolder.refreshCode();
+                }
+            });
+            entryHolder.itemView.setOnTouchListener(new SimpleSwipeTouchListener(holder.itemView.getContext(), _recyclerView) {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    super.onTouch(v, event);
+
+                    if (event.getActionMasked() == MotionEvent.ACTION_MOVE
+                            && isEntryDraggable(entryHolder.getEntry())) {
+                        _view.startDrag(entryHolder);
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                @Override
+                public void onSwipeRight() {
+                    super.onSwipeRight();
+                    if (entryHolder.getEntry().getInfo() instanceof TotpInfo) {
+                        entryHolder.setWindowOffset(+1);
+                    }
+                }
+
+                @Override
+                public void onSwipeLeft() {
+                    super.onSwipeLeft();
+                    if (entryHolder.getEntry().getInfo() instanceof TotpInfo) {
+                        entryHolder.setWindowOffset(-1);
+                    }
                 }
             });
 
