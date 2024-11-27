@@ -37,6 +37,7 @@ import com.beemdevelopment.aegis.encoding.Hex;
 import com.beemdevelopment.aegis.helpers.AnimationsHelper;
 import com.beemdevelopment.aegis.helpers.DropdownHelper;
 import com.beemdevelopment.aegis.helpers.EditTextHelper;
+import com.beemdevelopment.aegis.helpers.IconHelper;
 import com.beemdevelopment.aegis.helpers.SafHelper;
 import com.beemdevelopment.aegis.helpers.SimpleAnimationEndListener;
 import com.beemdevelopment.aegis.helpers.SimpleTextWatcher;
@@ -58,7 +59,6 @@ import com.beemdevelopment.aegis.ui.models.VaultGroupModel;
 import com.beemdevelopment.aegis.ui.tasks.ImportFileTask;
 import com.beemdevelopment.aegis.ui.views.IconAdapter;
 import com.beemdevelopment.aegis.util.Cloner;
-import com.beemdevelopment.aegis.util.IOUtils;
 import com.beemdevelopment.aegis.vault.VaultEntry;
 import com.beemdevelopment.aegis.vault.VaultEntryIcon;
 import com.beemdevelopment.aegis.vault.VaultGroup;
@@ -77,8 +77,6 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -232,6 +230,14 @@ public class EditEntryActivity extends AegisActivity {
             layoutAdvanced.addView(layoutSecret, secretIndex);
 
             if (_isNew && !_isManual) {
+                if (_iconPackManager.hasIconPack()) {
+                    IconPack.Icon suggestedIcon = IconHelper.getSuggestedIcon(_iconPackManager, _origEntry.getIssuer());
+                    if (suggestedIcon != null) {
+                        byte[] iconBytes = IconHelper.readIcon(suggestedIcon.getFile());
+                        _origEntry.setIcon(new VaultEntryIcon(iconBytes, suggestedIcon.getIconType()));
+                    }
+                }
+
                 setViewEnabled(layoutAdvanced, false);
             }
         } else {
@@ -808,12 +814,7 @@ public class EditEntryActivity extends AegisActivity {
                     byte[] data = stream.toByteArray();
                     icon = new VaultEntryIcon(data, IconType.PNG);
                 } else {
-                    byte[] iconBytes;
-                    try (FileInputStream inStream = new FileInputStream(_selectedIcon.getFile())){
-                        iconBytes = IOUtils.readFile(inStream);
-                    } catch (IOException e) {
-                        throw new ParseException(e.getMessage());
-                    }
+                    byte[] iconBytes = IconHelper.readIcon(_selectedIcon.getFile());
                     icon = new VaultEntryIcon(iconBytes, _selectedIcon.getIconType());
                 }
 

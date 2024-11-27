@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.beemdevelopment.aegis.R;
+import com.beemdevelopment.aegis.helpers.IconHelper;
 import com.beemdevelopment.aegis.helpers.MetricsHelper;
 import com.beemdevelopment.aegis.icons.IconPack;
 import com.beemdevelopment.aegis.ui.dialogs.Dialogs;
@@ -24,7 +25,6 @@ import com.beemdevelopment.aegis.ui.glide.GlideHelper;
 import com.beemdevelopment.aegis.ui.models.AssignIconEntry;
 import com.beemdevelopment.aegis.ui.views.AssignIconAdapter;
 import com.beemdevelopment.aegis.ui.views.IconAdapter;
-import com.beemdevelopment.aegis.util.IOUtils;
 import com.beemdevelopment.aegis.vault.VaultEntry;
 import com.beemdevelopment.aegis.vault.VaultEntryIcon;
 import com.bumptech.glide.Glide;
@@ -125,11 +125,7 @@ public class AssignIconsActivity extends AegisActivity implements AssignIconAdap
         for (AssignIconEntry selectedEntry : _entries) {
             VaultEntry entry = selectedEntry.getEntry();
             if (selectedEntry.getNewIcon() != null) {
-                byte[] iconBytes;
-                try (FileInputStream inStream = new FileInputStream(selectedEntry.getNewIcon().getFile())){
-                    iconBytes = IOUtils.readFile(inStream);
-                }
-
+                byte[] iconBytes = IconHelper.readIcon(selectedEntry.getNewIcon().getFile());
                 VaultEntryIcon icon = new VaultEntryIcon(iconBytes, selectedEntry.getNewIcon().getIconType());
                 entry.setIcon(icon);
                 uuids.add(entry.getUUID());
